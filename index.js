@@ -15,22 +15,22 @@ let html = (strings, ...values) => {
 //lit-html snippet - End
 
 class Stadium {
-  constructor(name) {
-    this.stadiumName = name;
+  constructor(nameData) {
+    this.stadiumName = nameData;
     this.stadiumCapacity = 0;
     this.concessions = [];
   }
 
-  addRoom(name, area) {
-    this.rooms.push(new Room(name, area));
+  addConcessions(concessionNameData, typeOfFoodData) {
+    this.concessions.push(new Concession(concessionNameData, typeOfFoodData));
   }
 }
 
 class Concession {
-  constructor(name, typeOfFood) {
-    this.concessionName = name;
+  constructor(concessionNameData, typeOfFoodData) {
+    this.concessionName = concessionNameData;
     this.typeOfFood = [];
-    this.typeOfFood = typeOfFood;
+    // this.typeOfFood = typeOfFoodData;
   }
 }
 
@@ -38,8 +38,11 @@ class HouseService {
   static url =
     "https://65772c23197926adf62d8e13.mockapi.io/Week12UnitFinalCodingProject";
 
-  static getAllHouses() {
-    return $.get(this.url);
+  // get request for getting all of my stadiums
+  static getAllStadiums() {
+    let allStadiumsData = $.get(this.url);
+    console.log("getting all the stadiums...", allStadiumsData);
+    return allStadiumsData;
   }
 
   static getHouse(id) {
@@ -71,19 +74,19 @@ class HouseService {
 class DOMManager {
   static houses;
 
-  static getAllHouses() {
-    HouseService.getAllHouses().then((houses) => this.render(houses));
+  static getAllStadiums() {
+    HouseService.getAllStadiums().then((houses) => this.render(houses));
   }
 
   static deleteStadium(id) {
     HouseService.deleteStadium(id)
-      .then(() => HouseService.getAllHouses())
+      .then(() => HouseService.getAllStadiums())
       .then((houses) => this.render(houses));
   }
 
   static createHouse(name) {
     HouseService.createHouse(new House(name))
-      .then(() => HouseService.getAllHouses())
+      .then(() => HouseService.getAllStadiums())
       .then((houses) => this.render(houses));
   }
 
@@ -98,7 +101,7 @@ class DOMManager {
         );
         HouseService.updateHouse(house)
           .then(() => {
-            return HouseService.getAllHouses();
+            return HouseService.getAllStadiums();
           })
           .then((houses) => this.render(houses));
       }
@@ -113,7 +116,7 @@ class DOMManager {
             house.concessions.splice(house.concessions.indexOf(room), 1);
             HouseService.updateHouse(house)
               .then(() => {
-                return HouseService.getAllHouses();
+                return HouseService.getAllStadiums();
               })
               .then((houses) => this.render(houses));
           }
@@ -126,9 +129,9 @@ class DOMManager {
   static render(houses) {
     console.log("Houses render method:", houses);
 
-    this.stadiums = stadiums;
+    this.house = houses;
     $("#app").empty();
-    for (let stadium of stadiums) {
+    for (let house of houses) {
       $("#app").prepend(
         html`<div id="$${house._id}" class="card">
             <div class="card-header">
