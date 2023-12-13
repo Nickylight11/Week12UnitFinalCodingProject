@@ -14,7 +14,7 @@ let html = (strings, ...values) => {
 };
 //lit-html snippet - End
 
-class House {
+class Stadium {
   constructor(name) {
     this.stadiumName = name;
     this.stadiumCapacity = 0;
@@ -26,11 +26,11 @@ class House {
   }
 }
 
-class Room {
-  constructor(name, area) {
+class Concession {
+  constructor(name, typeOfFood) {
     this.concessionName = name;
     this.typeOfFood = [];
-    this.area = area;
+    this.typeOfFood = typeOfFood;
   }
 }
 
@@ -60,7 +60,7 @@ class HouseService {
     });
   }
 
-  static deleteHouse(id) {
+  static deleteStadium(id) {
     return $.ajax({
       url: this.url + `/${id}`,
       type: "DELETE",
@@ -75,8 +75,8 @@ class DOMManager {
     HouseService.getAllHouses().then((houses) => this.render(houses));
   }
 
-  static deleteHouse(id) {
-    HouseService.deleteHouse(id)
+  static deleteStadium(id) {
+    HouseService.deleteStadium(id)
       .then(() => HouseService.getAllHouses())
       .then((houses) => this.render(houses));
   }
@@ -126,16 +126,16 @@ class DOMManager {
   static render(houses) {
     console.log("Houses render method:", houses);
 
-    this.houses = houses;
+    this.stadiums = stadiums;
     $("#app").empty();
-    for (let house of houses) {
+    for (let stadium of stadiums) {
       $("#app").prepend(
         html`<div id="$${house._id}" class="card">
             <div class="card-header">
               <h2>${house.stadiumName}</h2>
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteHouse('${house._id}')"
+                onclick="DOMManager.deleteStadium('${house._id}')"
               >
                 Delete
               </button>
@@ -148,7 +148,7 @@ class DOMManager {
                     <!--beginning of room input  -->
                     <input
                       type="text"
-                      id="${house._id}-room-name"
+                      id="${house._id}-concession-name"
                       class="form-control"
                       placeholder="Concession Name"
                     />
@@ -157,9 +157,9 @@ class DOMManager {
                   <div class="col-sm">
                     <input
                       type="text"
-                      id="${house._id}-room-area"
+                      id="${house._id}-concession-foods"
                       class="form-control"
-                      placeholder="Room Area"
+                      placeholder="Concession Foods"
                     />
                   </div>
                 </div>
@@ -199,9 +199,9 @@ class DOMManager {
   }
 }
 
-$("#create-new-house").click(() => {
-  DOMManager.createHouse($("#new-house-name").val());
-  $("#new-house-name").val("");
+$("#create-new-stadium").click(() => {
+  DOMManager.createStadium($("#new-stadium-name").val());
+  $("#new-stadium-name").val("");
 });
 
-DOMManager.getAllHouses();
+DOMManager.getAllStadiums();
