@@ -34,7 +34,7 @@ class Concession {
   }
 }
 
-class HouseService {
+class StadiumService {
   static url =
     "https://65772c23197926adf62d8e13.mockapi.io/Week12UnitFinalCodingProject";
 
@@ -45,19 +45,19 @@ class HouseService {
     return allStadiumsData;
   }
 
-  static getHouse(id) {
+  static getStadium(id) {
     return $.get(this.url + `/${id}`);
   }
 
-  static createHouse(house) {
-    return $.post(this.url, house);
+  static createStadium(stadium) {
+    return $.post(this.url, stadium);
   }
 
-  static updateHouse(house) {
+  static updateStadium(stadium) {
     return $.ajax({
-      url: this.url + `/${house._id}`,
+      url: this.url + `/${stadium._id}`,
       dataType: "json",
-      data: JSON.stringify(house),
+      data: JSON.stringify(stadium),
       contentType: "application/json",
       type: "PUT",
     });
@@ -72,53 +72,57 @@ class HouseService {
 }
 
 class DOMManager {
-  static houses;
+  static stadiums;
 
   static getAllStadiums() {
-    HouseService.getAllStadiums().then((houses) => this.render(houses));
+    StadiumService.getAllStadiums().then((stadiums) => this.render(stadiums));
   }
 
   static deleteStadium(id) {
-    HouseService.deleteStadium(id)
-      .then(() => HouseService.getAllStadiums())
+    StadiumService.deleteStadium(id)
+      .then(() => StadiumService.getAllStadiums())
+      .then((stadiums) => this.render(stadiums));
+  }
+
+  static createStadium(name) {
+    StadiumService.createStadium(new Stadium(name))
+      .then(() => StadiumService.getAllStadiums())
       .then((houses) => this.render(houses));
   }
 
-  static createHouse(name) {
-    HouseService.createHouse(new House(name))
-      .then(() => HouseService.getAllStadiums())
-      .then((houses) => this.render(houses));
-  }
-
-  static addRoom(id) {
-    for (let house of this.houses) {
-      if (house._id == id) {
-        house.concessions.push(
+  static addConcessions(id) {
+    for (let stadium of this.stadiums) {
+      if (stadium._id == id) {
+        stadium.concessions.push(
           new Room(
-            $(`#${house._id}-room-name`).val(),
-            $(`#${house._id}-room-area`).val()
+            $(`#${stadium._id}-concessions-concessionsNameData`).val(),
+            $(`#${stadium._id}-concessions-typeOfFoodData`).val()
           )
         );
-        HouseService.updateHouse(house)
+        StadiumService.updateStadium(stadium)
           .then(() => {
-            return HouseService.getAllStadiums();
+            return StadiumService.getAllStadiums();
           })
-          .then((houses) => this.render(houses));
+          .then((stadium) => this.render(stadiums));
       }
     }
   }
 
-  static deleteRoom(houseId, roomId) {
-    for (let house of this.houses) {
-      if (house._id == houseId) {
-        for (let room of house.concessions) {
-          if (room._id == roomId) {
-            house.concessions.splice(house.concessions.indexOf(room), 1);
-            HouseService.updateHouse(house)
+  static deleteStadium(stadiumId, concessionId) {
+    console.log("what is happening here", stadiumId);
+    for (let stadium of this.stadiums) {
+      if (stadium._id == stadiumsId) {
+        for (let concession of stadium.concessions) {
+          if (concession._id == concessionId) {
+            stadium.concessions.splice(
+              stadium.concessions.indexOf(concession),
+              1
+            );
+            StadiumService.updateStadium(stadium)
               .then(() => {
-                return HouseService.getAllStadiums();
+                return StadiumService.getAllStadiums();
               })
-              .then((houses) => this.render(houses));
+              .then((stadiums) => this.render(stadiums));
           }
         }
       }
@@ -126,32 +130,34 @@ class DOMManager {
   }
 
   //this renders multiple instances of the houses array
-  static render(houses) {
-    console.log("Houses render method:", houses);
+  static render(stadiums) {
+    console.log("Stadium render method:", stadiums);
 
-    this.house = houses;
+    this.stadium = stadiums;
+    console.log(this.stadium);
+    console.log(stadiums[0].concessions[0].id);
     $("#app").empty();
-    for (let house of houses) {
+    for (let stadium of stadiums) {
       $("#app").prepend(
-        html`<div id="$${house._id}" class="card">
+        html`<div id="$${stadium._id}" class="card">
             <div class="card-header">
-              <h2>${house.stadiumName}</h2>
+              <h2>${stadium.stadiumName}</h2>
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteStadium('${house._id}')"
+                onclick="DOMManager.deleteStadium(${stadium._id}, ${Concession._id})"
               >
-                Delete
+                stadium Delete
               </button>
             </div>
             <div class="card-body">
               <div class="card">
-                <h3>Stadium Capacity: ${house.stadiumCapacity}</h3>
+                <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
                 <div class="row">
                   <div class="col-sm">
                     <!--beginning of room input  -->
                     <input
                       type="text"
-                      id="${house._id}-concession-name"
+                      id="${stadium._id}-concession-name"
                       class="form-control"
                       placeholder="Concession Name"
                     />
@@ -160,15 +166,15 @@ class DOMManager {
                   <div class="col-sm">
                     <input
                       type="text"
-                      id="${house._id}-concession-foods"
+                      id="${stadium._id}-concession-foods"
                       class="form-control"
                       placeholder="Concession Foods"
                     />
                   </div>
                 </div>
                 <button
-                  id="${house._id}-new-room"
-                  onclick="DOMManager.addRoom('${house._id}')"
+                  id="${stadium._id}-new-concession"
+                  onclick="DOMManager.addConcession('${stadium._id}')"
                   class="btn btn-primary form-control"
                 >
                   Add
@@ -178,22 +184,22 @@ class DOMManager {
           </div>
           <br />`
       );
-      for (let room of house.concessions) {
-        $(`#${house._id}`)
+      for (let concession of stadium.concessions) {
+        $(`#${stadium._id}`)
           .find(".card-body")
           .append(
             html`<p>
-              <span id="name-${room._id}"
-                ><strong>Name: </strong> ${room.name}</span
+              <span id="name-${concession._id}"
+                ><strong>Name: </strong> ${concession.name}</span
               >
-              <span id="name-${room._id}"
-                ><strong>Area: </strong> ${room.area}</span
+              <span id="name-${concession._id}"
+                ><strong>Area: </strong> ${concession.typeOfFoodData}</span
               >
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteRoom('${house._id}', '${room._id}')"
+                onclick="DOMManager.deleteStadium('${stadium._id}', '${concession._id}')"
               >
-                Delete Room
+                Delete Concession
               </button>
             </p>`
           );
