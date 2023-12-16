@@ -78,10 +78,29 @@ class DOMManager {
     StadiumService.getAllStadiums().then((stadiums) => this.render(stadiums));
   }
 
-  static deleteStadium(id) {
-    StadiumService.deleteStadium(id)
+  static deleteStadium(stadiumId) {
+    StadiumService.deleteStadium(stadiumId)
       .then(() => StadiumService.getAllStadiums())
       .then((stadiums) => this.render(stadiums));
+  }
+  static deleteConcession(stadiumId, concessionId) {
+    for (let stadium of this.stadiums) {
+      if (stadium._id == stadiumId) {
+        for (let concession of stadium.concessions) {
+          if (concession._id == concessionId) {
+            stadium.concessions.splice(
+              stadium.concessions.indexOf(concession),
+              1
+            );
+            StadiumService.updateStadium(stadium)
+              .then(() => {
+                return StadiumService.getAllStadiums();
+              })
+              .then((stadiums) => this.render(stadiums));
+          }
+        }
+      }
+    }
   }
 
   static createStadium(name) {
@@ -111,7 +130,7 @@ class DOMManager {
   static deleteStadium(stadiumId, concessionId) {
     console.log("what is happening here", stadiumId);
     for (let stadium of this.stadiums) {
-      if (stadium._id == stadiumsId) {
+      if (stadium._id == stadiumId) {
         for (let concession of stadium.concessions) {
           if (concession._id == concessionId) {
             stadium.concessions.splice(
@@ -133,8 +152,8 @@ class DOMManager {
   static render(stadiums) {
     console.log("Stadium render method:", stadiums);
 
-    this.stadium = stadiums;
-    console.log(this.stadium);
+    this.stadiums = stadiums;
+    console.log(this.stadiums);
     console.log(stadiums[0].concessions[0].id);
     $("#app").empty();
     for (let stadium of stadiums) {
@@ -144,9 +163,9 @@ class DOMManager {
               <h2>${stadium.stadiumName}</h2>
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteStadium(${stadium._id}, ${Concession._id})"
+                onclick="DOMManager.deleteStadium('${stadium._id}')"
               >
-                stadium Delete
+                Stadium Delete
               </button>
             </div>
             <div class="card-body">
@@ -197,7 +216,7 @@ class DOMManager {
               >
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteStadium('${stadium._id}', '${concession._id}')"
+                onclick="DOMManager.deleteConcession('${stadium._id}', '${concession._id}')"
               >
                 Delete Concession
               </button>
