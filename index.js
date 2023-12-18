@@ -55,7 +55,7 @@ class StadiumService {
 
   static updateStadium(stadium) {
     return $.ajax({
-      url: this.url + `/${stadium._id}`,
+      url: this.url + `/${stadium.id}`,
       dataType: "json",
       data: JSON.stringify(stadium),
       contentType: "application/json",
@@ -78,14 +78,18 @@ class DOMManager {
     StadiumService.getAllStadiums().then((stadiums) => this.render(stadiums));
   }
 
-  static deleteStadium(stadiumId) {
+  static deleteStadium(stadiumId, stadiumName) {
+    console.log("This stadium is set for deletion...", stadiumName);
     StadiumService.deleteStadium(stadiumId)
       .then(() => StadiumService.getAllStadiums())
       .then((stadiums) => this.render(stadiums));
+    console.log(`${stadiumName} is deleted`);
   }
+
+  // this class would be used to delete individual concessions within each stadium
   static deleteConcession(stadiumId, concessionId) {
     for (let stadium of this.stadiums) {
-      if (stadium._id == stadiumId) {
+      if (stadium.id == stadiumId) {
         for (let concession of stadium.concessions) {
           if (concession._id == concessionId) {
             stadium.concessions.splice(
@@ -109,13 +113,13 @@ class DOMManager {
       .then((houses) => this.render(houses));
   }
 
-  static addConcessions(id) {
+  static addConcession(id) {
     for (let stadium of this.stadiums) {
-      if (stadium._id == id) {
+      if (stadium.id == id) {
         stadium.concessions.push(
-          new Room(
-            $(`#${stadium._id}-concessions-concessionsNameData`).val(),
-            $(`#${stadium._id}-concessions-typeOfFoodData`).val()
+          new concession(
+            $(`#${stadium.id}-concessions-concessionsNameData`).val(),
+            $(`#${stadium.id}-concessions-typeOfFoodData`).val()
           )
         );
         StadiumService.updateStadium(stadium)
@@ -127,10 +131,16 @@ class DOMManager {
     }
   }
 
-  static deleteStadium(stadiumId, concessionId) {
-    console.log("what is happening here", stadiumId);
+  // Need to review code to ensure this is a proper test
+  static deleteConcession123(stadiumId, concessionId) {
+    console.log(
+      "Delete stadium stadiumId",
+      stadiumId,
+      "concessionId",
+      concessionId
+    );
     for (let stadium of this.stadiums) {
-      if (stadium._id == stadiumId) {
+      if (stadium.id == stadiumId) {
         for (let concession of stadium.concessions) {
           if (concession._id == concessionId) {
             stadium.concessions.splice(
@@ -157,15 +167,18 @@ class DOMManager {
     console.log(stadiums[0].concessions[0].id);
     $("#app").empty();
     for (let stadium of stadiums) {
+      let stadiumNameData = stadium.stadiumName;
+      console.log(stadiumNameData);
+
       $("#app").prepend(
-        html`<div id="$${stadium._id}" class="card">
+        html`<div id="$${stadium.id}" class="card">
             <div class="card-header">
               <h2>${stadium.stadiumName}</h2>
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteStadium('${stadium._id}')"
+                onclick="DOMManager.deleteStadium(${stadium.id}, '${stadiumNameData}')"
               >
-                Stadium Delete
+                Delete Stadium
               </button>
             </div>
             <div class="card-body">
@@ -176,7 +189,7 @@ class DOMManager {
                     <!--beginning of room input  -->
                     <input
                       type="text"
-                      id="${stadium._id}-concession-name"
+                      id="${stadium.id}-concession-name"
                       class="form-control"
                       placeholder="Concession Name"
                     />
@@ -185,15 +198,15 @@ class DOMManager {
                   <div class="col-sm">
                     <input
                       type="text"
-                      id="${stadium._id}-concession-foods"
+                      id="${stadium.id}-concession-foods"
                       class="form-control"
                       placeholder="Concession Foods"
                     />
                   </div>
                 </div>
                 <button
-                  id="${stadium._id}-new-concession"
-                  onclick="DOMManager.addConcession('${stadium._id}')"
+                  id="${stadium.id}-new-concession"
+                  onclick="DOMManager.addConcession('${stadium.id}')"
                   class="btn btn-primary form-control"
                 >
                   Add
@@ -204,7 +217,7 @@ class DOMManager {
           <br />`
       );
       for (let concession of stadium.concessions) {
-        $(`#${stadium._id}`)
+        $(`#${stadium.id}`)
           .find(".card-body")
           .append(
             html`<p>
@@ -216,7 +229,7 @@ class DOMManager {
               >
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteConcession('${stadium._id}', '${concession._id}')"
+                onclick="DOMManager.deleteConcession('${stadium.id}', '${concession._id}')"
               >
                 Delete Concession
               </button>
