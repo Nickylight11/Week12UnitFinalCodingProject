@@ -21,15 +21,21 @@ class Stadium {
     this.concessions = [];
   }
 
-  addConcessions(concessionNameData, typeOfFoodData) {
+  addConcession(concessionNameData, typeOfFoodData) {
     this.concessions.push(new Concession(concessionNameData, typeOfFoodData));
+  }
+}
+
+class Capacity {
+  constructor(capacityNumberData) {
+    this.capacity = capacityNumberData;
   }
 }
 
 class Concession {
   constructor(concessionNameData, typeOfFoodData) {
     this.concessionName = concessionNameData;
-    this.typeOfFood = [];
+    this.typeOfFood = typeOfFoodData;
     // this.typeOfFood = typeOfFoodData;
   }
 }
@@ -51,6 +57,23 @@ class StadiumService {
 
   static createStadium(stadium) {
     return $.post(this.url, stadium);
+  }
+
+  static createCapacity(Capacity) {
+    return $.post(this.url, Capacity);
+  }
+
+  static createConcession(concession) {
+    return $.post(this.url, concession)
+      .done((data) => {
+        console.log("Create Concession API Response:", data);
+      })
+      .fail((xhr, status, error) => {
+        console.error("Create Concession API Request Failed:", status, error);
+      })
+      .always(() => {
+        console.log("Create Concession API Request Completed");
+      });
   }
 
   static updateStadium(stadium) {
@@ -107,53 +130,44 @@ class DOMManager {
     }
   }
 
-  static createStadium(name) {
-    StadiumService.createStadium(new Stadium(name))
+  static createStadium(name, capacity) {
+    const newStadium = new Stadium(name);
+    newStadium.stadiumCapacity = capacity; // Set the capacity for the new stadium
+
+    StadiumService.createStadium(newStadium)
       .then(() => StadiumService.getAllStadiums())
-      .then((houses) => this.render(houses));
+      .then((stadiums) => this.render(stadiums));
   }
 
-  static addConcession(id) {
-    for (let stadium of this.stadiums) {
-      if (stadium.id == id) {
-        stadium.concessions.push(
-          new concession(
-            $(`#${stadium.id}-concessions-concessionsNameData`).val(),
-            $(`#${stadium.id}-concessions-typeOfFoodData`).val()
-          )
-        );
-        StadiumService.updateStadium(stadium)
-          .then(() => {
-            return StadiumService.getAllStadiums();
-          })
-          .then((stadium) => this.render(stadiums));
-      }
-    }
+  static createCapacity(number) {
+    StadiumService.createCapacity(new Capacity(number))
+      .then(() => StadiumService.getAllStadiums())
+      .then((stadiums) => this.render(stadiums));
   }
 
-  // Need to review code to ensure this is a proper test
-  static deleteConcession123(stadiumId, concessionId) {
-    console.log(
-      "Delete stadium stadiumId",
-      stadiumId,
-      "concessionId",
-      concessionId
-    );
+  static createConcession(name) {
+    StadiumService.createConcession(new Concession(name))
+      .then(() => StadiumService.getAllStadiums())
+      .then((concessions) => this.render(concessions));
+  }
+  static addConcession(stadiumId) {
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
-        for (let concession of stadium.concessions) {
-          if (concession._id == concessionId) {
-            stadium.concessions.splice(
-              stadium.concessions.indexOf(concession),
-              1
-            );
-            StadiumService.updateStadium(stadium)
-              .then(() => {
-                return StadiumService.getAllStadiums();
-              })
-              .then((stadiums) => this.render(stadiums));
-          }
-        }
+        // Capture the new concession and capacity values from input fields
+        const newConcession = new Concession(
+          $(`#${stadiumId}-concession-name`).val(),
+          $(`#${stadiumId}-concession-foods`).val()
+        );
+        const newCapacity = $(`#${stadiumId}-stadium-capacity`).val();
+
+        // Update the stadium properties
+        stadium.concessions.push(newConcession);
+        stadium.stadiumCapacity = newCapacity;
+
+        // Update the stadium on the server
+        StadiumService.updateStadium(stadium)
+          .then(() => StadiumService.getAllStadiums())
+          .then((stadiums) => this.render(stadiums));
       }
     }
   }
@@ -171,7 +185,7 @@ class DOMManager {
       console.log(stadiumNameData);
 
       $("#app").prepend(
-        html`<div id="$${stadium.id}" class="card">
+        html`<div id="${stadium.id}" class="card">
             <div class="card-header">
               <h2>${stadium.stadiumName}</h2>
               <button
@@ -182,35 +196,38 @@ class DOMManager {
               </button>
             </div>
             <div class="card-body">
-              <div class="card">
-                <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
-                <div class="row">
-                  <div class="col-sm">
-                    <!--beginning of room input  -->
-                    <input
-                      type="text"
-                      id="${stadium.id}-concession-name"
-                      class="form-control"
-                      placeholder="Concession Name"
-                    />
-                    <!-- end of room input -->
-                  </div>
-                  <div class="col-sm">
-                    <input
-                      type="text"
-                      id="${stadium.id}-concession-foods"
-                      class="form-control"
-                      placeholder="Concession Foods"
-                    />
-                  </div>
+              <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
+              <div class="row">
+                <div class="col-sm">
+                  <!--beginning of room input  -->
+                  <input
+                    type="text"
+                    id="${stadium.id}-concession-name"
+                    class="form-control"
+                    placeholder="Concession Name"
+                  />
+                  <!-- end of room input -->
                 </div>
-                <button
-                  id="${stadium.id}-new-concession"
-                  onclick="DOMManager.addConcession('${stadium.id}')"
-                  class="btn btn-primary form-control"
-                >
-                  Add
-                </button>
+                <div class="col-sm">
+                  <input
+                    type="text"
+                    id="${stadium.id}-concession-foods"
+                    class="form-control"
+                    placeholder="Concession Foods"
+                  />
+                </div>
+              </div>
+              <button
+                id="${stadium.id}-new-concession"
+                onclick="DOMManager.addConcession('${stadium.id}')"
+                class="btn btn-primary form-control"
+              >
+                Add Concession
+              </button>
+              <!-- Display concessions -->
+              <div class="concessions-container">
+                <h4>Concessions:</h4>
+                ${stadium.concessions.map((concession) => html``)}
               </div>
             </div>
           </div>
@@ -222,10 +239,11 @@ class DOMManager {
           .append(
             html`<p>
               <span id="name-${concession._id}"
-                ><strong>Name: </strong> ${concession.name}</span
+                ><strong>Concession Name: </strong>
+                ${concession.concessionName}</span
               >
               <span id="name-${concession._id}"
-                ><strong>Area: </strong> ${concession.typeOfFoodData}</span
+                ><strong>Foods: </strong> ${concession.typeOfFoodData}</span
               >
               <button
                 class="btn btn-danger"
