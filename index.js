@@ -14,6 +14,8 @@ let html = (strings, ...values) => {
 };
 //lit-html snippet - End
 
+//Used this class for each Stadium that is established in the
+//app along with adding a concession
 class Stadium {
   constructor(nameData) {
     this.stadiumName = nameData;
@@ -26,12 +28,15 @@ class Stadium {
   }
 }
 
+//created this class to determine the stadium's maximum capacity
 class Capacity {
   constructor(capacityNumberData) {
     this.capacity = capacityNumberData;
   }
 }
 
+//created this class to identify what concession is served at a
+//particular stadium and the foods/drinks included in said concession.
 class Concession {
   constructor(concessionNameData, typeOfFoodData) {
     this.concessionName = concessionNameData;
@@ -40,11 +45,12 @@ class Concession {
   }
 }
 
+//created this class to generate information from MockAPI
 class StadiumService {
   static url =
     "https://65772c23197926adf62d8e13.mockapi.io/Week12UnitFinalCodingProject";
 
-  // get request for getting all of my stadiums
+  //get request for getting all of my stadiums
   static getAllStadiums() {
     let allStadiumsData = $.get(this.url);
     console.log("getting all the stadiums...", allStadiumsData);
@@ -55,14 +61,17 @@ class StadiumService {
     return $.get(this.url + `/${id}`);
   }
 
+  //used to create a new stadium at the top of the app
   static createStadium(stadium) {
     return $.post(this.url, stadium);
   }
 
+  //used to establish capacity when creating a new stadium
   static createCapacity(Capacity) {
     return $.post(this.url, Capacity);
   }
 
+  //used to add a concession and the foods at said concession
   static createConcession(concession) {
     return $.post(this.url, concession)
       .done((data) => {
@@ -86,6 +95,7 @@ class StadiumService {
     });
   }
 
+  //used to delete a stadium
   static deleteStadium(id) {
     return $.ajax({
       url: this.url + `/${id}`,
@@ -94,6 +104,8 @@ class StadiumService {
   }
 }
 
+//created to model a static screen of information, holding the stadiums,
+//their capacity, concessions and foods
 class DOMManager {
   static stadiums;
 
@@ -101,6 +113,8 @@ class DOMManager {
     StadiumService.getAllStadiums().then((stadiums) => this.render(stadiums));
   }
 
+  //added a console log message to identify which particular
+  //stadium would be set to be deleted
   static deleteStadium(stadiumId, stadiumName) {
     console.log("This stadium is set for deletion...", stadiumName);
     StadiumService.deleteStadium(stadiumId)
@@ -109,7 +123,7 @@ class DOMManager {
     console.log(`${stadiumName} is deleted`);
   }
 
-  // this class would be used to delete individual concessions within each stadium
+  //this class would be used to delete individual concessions within each stadium
   static deleteConcession(stadiumId, concessionId) {
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
@@ -130,9 +144,11 @@ class DOMManager {
     }
   }
 
+  //when creating a new stadium, the goal is to have the name of the
+  //stadium and capacity be prompted for the user
   static createStadium(name, capacity) {
     const newStadium = new Stadium(name);
-    newStadium.stadiumCapacity = capacity; // Set the capacity for the new stadium
+    newStadium.stadiumCapacity = capacity; //Set the capacity for the new stadium
 
     StadiumService.createStadium(newStadium)
       .then(() => StadiumService.getAllStadiums())
@@ -153,18 +169,18 @@ class DOMManager {
   static addConcession(stadiumId) {
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
-        // Capture the new concession and capacity values from input fields
+        //Capture the new concession and capacity values from input fields
         const newConcession = new Concession(
           $(`#${stadiumId}-concession-name`).val(),
           $(`#${stadiumId}-concession-foods`).val()
         );
         const newCapacity = $(`#${stadiumId}-stadium-capacity`).val();
 
-        // Update the stadium properties
+        //Update the stadium properties
         stadium.concessions.push(newConcession);
         stadium.stadiumCapacity = newCapacity;
 
-        // Update the stadium on the server
+        //Update the stadium on the server
         StadiumService.updateStadium(stadium)
           .then(() => StadiumService.getAllStadiums())
           .then((stadiums) => this.render(stadiums));
@@ -172,7 +188,7 @@ class DOMManager {
     }
   }
 
-  //this renders multiple instances of the houses array
+  //this renders multiple instances of the stadiums array
   static render(stadiums) {
     console.log("Stadium render method:", stadiums);
 
@@ -184,6 +200,7 @@ class DOMManager {
       let stadiumNameData = stadium.stadiumName;
       console.log(stadiumNameData);
 
+      //developed button for 'Delete Stadium'
       $("#app").prepend(
         html`<div id="${stadium.id}" class="card">
             <div class="card-header">
@@ -199,14 +216,14 @@ class DOMManager {
               <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
               <div class="row">
                 <div class="col-sm">
-                  <!--beginning of room input  -->
+                  <!--beginning of input  -->
                   <input
                     type="text"
                     id="${stadium.id}-concession-name"
                     class="form-control"
                     placeholder="Concession Name"
                   />
-                  <!-- end of room input -->
+                  <!-- end of input -->
                 </div>
                 <div class="col-sm">
                   <input
@@ -217,6 +234,8 @@ class DOMManager {
                   />
                 </div>
               </div>
+
+              <!-- developed button for 'Add Concession' -->
               <button
                 id="${stadium.id}-new-concession"
                 onclick="DOMManager.addConcession('${stadium.id}')"
@@ -245,6 +264,7 @@ class DOMManager {
               <span id="name-${concession._id}"
                 ><strong>Foods: </strong> ${concession.typeOfFoodData}</span
               >
+              <!--developed button for 'Delete Concession'-->
               <button
                 class="btn btn-danger"
                 onclick="DOMManager.deleteConcession('${stadium.id}', '${concession._id}')"
@@ -257,6 +277,8 @@ class DOMManager {
     }
   }
 }
+
+//used to display the new stadium name within the DOM once a stadium is created
 
 $("#create-new-stadium").click(() => {
   DOMManager.createStadium($("#new-stadium-name").val());
