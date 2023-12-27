@@ -108,7 +108,18 @@ class StadiumService {
 //their capacity, concessions and foods
 class DOMManager {
   static stadiums;
-
+  static editStadium(stadiumId) {
+    const newCapacity = prompt("Enter new stadium capacity:");
+    if (newCapacity !== null && !isNaN(newCapacity)) {
+      StadiumService.getStadium(stadiumId)
+        .then((stadium) => {
+          stadium.stadiumCapacity = parseInt(newCapacity);
+          return StadiumService.updateStadium(stadium);
+        })
+        .then(() => StadiumService.getAllStadiums())
+        .then((stadiums) => this.render(stadiums));
+    }
+  }
   static getAllStadiums() {
     StadiumService.getAllStadiums().then((stadiums) => this.render(stadiums));
   }
