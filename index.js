@@ -145,15 +145,17 @@ class DOMManager {
   }
 
   //this class would be used to delete individual concessions within each stadium
+  //onclick="DOMManager.deleteStadium(${stadium.id}, '${stadiumNameData}')"
   static deleteConcession(stadiumId, concessionId) {
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
         for (let concession of stadium.concessions) {
           if (concession._id == concessionId) {
-            stadium.concessions.splice(
-              stadium.concessions.indexOf(concession),
-              1
-            );
+            console.log("hello " + concession);
+            //stadium.concessions.splice(
+            //stadium.concessions.indexOf(concession),
+            //1
+            //);
             StadiumService.updateStadium(stadium)
               .then(() => {
                 return StadiumService.getAllStadiums();
@@ -251,8 +253,9 @@ class DOMManager {
                   type="text"
                   id="${stadium.id}-stadium-capacity"
                   class="form-control"
-                  placeholder="Stadium Capacity"
+                  onclick="DOMManager.updateCapacity(${stadium.id}, $('#${stadium.id}-stadium-capacity').val())"
                 />
+
                 <!-- use this for capacity -->
                 <button
                   class="btn btn-danger"
@@ -308,7 +311,7 @@ class DOMManager {
                 ><strong>Concession Name: </strong>
                 ${concession.concessionName}</span
               >
-              <span id="name-${concession._id}"
+              <span id="food-${concession._id}"
                 ><strong>Foods: </strong> ${concession.typeOfFood}</span
               >
               <!--developed button for 'Delete Concession'-->
