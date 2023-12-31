@@ -256,7 +256,7 @@ class DOMManager {
                 <!-- use this for capacity -->
                 <button
                   class="btn btn-danger"
-                  onclick="DOMManager.updateCapacity(${stadium.id}, $(`${stadium.id}-stadium-capacity`).val())"
+                  onclick="DOMManager.updateCapacity(${stadium.id}, newCapacity)"
                 >
                   Edit Capacity
                 </button>
