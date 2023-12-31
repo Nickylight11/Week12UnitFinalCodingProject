@@ -70,6 +70,13 @@ class StadiumService {
   static createCapacity(Capacity) {
     return $.post(this.url, Capacity);
   }
+  // static updateCapacity(stadiumId, newCapacity) {
+  //   for (let stadium of this.stadiums) {
+  //     if (id == stadiumId) {
+  //       stadium.capacity = newCapacity;
+  //     }
+  //   }
+  // }
 
   //used to add a concession and the foods at said concession
   static createConcession(concession) {
@@ -86,6 +93,9 @@ class StadiumService {
   }
 
   static updateStadium(stadium) {
+    console.log("In updateStadium");
+    console.log(stadium.concessions);
+
     return $.ajax({
       url: this.url + `/${stadium.id}`,
       dataType: "json",
@@ -171,6 +181,15 @@ class DOMManager {
       .then(() => StadiumService.getAllStadiums())
       .then((stadiums) => this.render(stadiums));
   }
+  static updateCapacity(stadiumId, newCapacity) {
+    for (let stadium of this.stadiums) {
+      if (stadium.id == stadiumId) {
+        stadium.stadiumCapacity = newCapacity;
+        StadiumService.updateStadium(stadium);
+      }
+      this.render(this.stadiums);
+    }
+  }
 
   static createConcession(name) {
     StadiumService.createConcession(new Concession(name))
@@ -182,6 +201,7 @@ class DOMManager {
       if (stadium.id == stadiumId) {
         //Capture the new concession and capacity values from input fields
         const newConcession = new Concession(
+          // .val help for button
           $(`#${stadiumId}-concession-name`).val(),
           $(`#${stadiumId}-concession-foods`).val()
         );
@@ -202,6 +222,7 @@ class DOMManager {
   //this renders multiple instances of the stadiums array
   static render(stadiums) {
     console.log("Stadium render method:", stadiums);
+    //const newCapacity = $(`#${stadiumId}-stadium-capacity`).val();
 
     this.stadiums = stadiums;
     console.log(this.stadiums);
@@ -224,7 +245,22 @@ class DOMManager {
               </button>
             </div>
             <div class="card-body">
-              <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
+              <div>
+                <h3>Stadium Capacity: ${stadium.stadiumCapacity}</h3>
+                <input
+                  type="text"
+                  id="${stadium.id}-stadium-capacity"
+                  class="form-control"
+                  placeholder="Stadium Capacity"
+                />
+                <!-- use this for capacity -->
+                <button
+                  class="btn btn-danger"
+                  onclick="DOMManager.updateCapacity(${stadium.id}, $(`${stadium.id}-stadium-capacity`).val())"
+                >
+                  Edit Capacity
+                </button>
+              </div>
               <div class="row">
                 <div class="col-sm">
                   <!--beginning of input  -->
@@ -273,9 +309,10 @@ class DOMManager {
                 ${concession.concessionName}</span
               >
               <span id="name-${concession._id}"
-                ><strong>Foods: </strong> ${concession.typeOfFoodData}</span
+                ><strong>Foods: </strong> ${concession.typeOfFood}</span
               >
               <!--developed button for 'Delete Concession'-->
+              <!-- XXXYYYZZZ -->
               <button
                 class="btn btn-danger"
                 onclick="DOMManager.deleteConcession('${stadium.id}', '${concession._id}')"
