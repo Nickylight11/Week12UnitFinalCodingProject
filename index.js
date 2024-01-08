@@ -93,9 +93,9 @@ class StadiumService {
   }
 
   static updateStadium(stadium) {
-    console.log("In updateStadium");
-    console.log(stadium.concessions);
-
+    console.log("In updateStadium", stadium);
+    //console.log(stadium.concessions);
+    console.log("a url", this.url + `/${stadium.id}`);
     return $.ajax({
       url: this.url + `/${stadium.id}`,
       dataType: "json",
@@ -150,7 +150,7 @@ class DOMManager {
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
         for (let concession of stadium.concessions) {
-          if (concession._id == concessionId) {
+          if (concession.id == concessionId) {
             console.log("hello " + concession);
             //stadium.concessions.splice(
             //stadium.concessions.indexOf(concession),
@@ -199,24 +199,31 @@ class DOMManager {
       .then((concessions) => this.render(concessions));
   }
   static addConcession(stadiumId) {
+    console.log("adding concessions...", stadiumId);
     for (let stadium of this.stadiums) {
       if (stadium.id == stadiumId) {
+        console.log("concession found...", stadiumId);
         //Capture the new concession and capacity values from input fields
         const newConcession = new Concession(
           // .val help for button
           $(`#${stadiumId}-concession-name`).val(),
           $(`#${stadiumId}-concession-foods`).val()
         );
+        console.log("text", newConcession);
         const newCapacity = $(`#${stadiumId}-stadium-capacity`).val();
 
         //Update the stadium properties
         stadium.concessions.push(newConcession);
+        console.log("matts idea", stadium);
         stadium.stadiumCapacity = newCapacity;
 
         //Update the stadium on the server
         StadiumService.updateStadium(stadium)
           .then(() => StadiumService.getAllStadiums())
-          .then((stadiums) => this.render(stadiums));
+          .then((stadiums) => {
+            console.log("StadiumService getAllStadiums", stadiums);
+            return this.render(stadiums);
+          });
       }
     }
   }
@@ -296,29 +303,33 @@ class DOMManager {
               <!-- Display concessions -->
               <div class="concessions-container">
                 <h4>Concessions:</h4>
-                ${stadium.concessions.map((concession) => html``)}
+                ${stadium.concessions.map(
+                  (concession) =>
+                    html` <div>${concession.concessionName}</div> `
+                )}
               </div>
             </div>
           </div>
           <br />`
       );
       for (let concession of stadium.concessions) {
+        console.log("is this the solution?", concession);
         $(`#${stadium.id}`)
           .find(".card-body")
           .append(
             html`<p>
-              <span id="name-${concession._id}"
+              <span id="name-${concession.id}"
                 ><strong>Concession Name: </strong>
                 ${concession.concessionName}</span
               >
-              <span id="food-${concession._id}"
+              <span id="food-${concession.id}"
                 ><strong>Foods: </strong> ${concession.typeOfFood}</span
               >
               <!--developed button for 'Delete Concession'-->
               <!-- XXXYYYZZZ -->
               <button
                 class="btn btn-danger"
-                onclick="DOMManager.deleteConcession('${stadium.id}', '${concession._id}')"
+                onclick="DOMManager.deleteConcession('${stadium.id}', '${concession.id}')"
               >
                 Delete Concession
               </button>
