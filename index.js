@@ -80,6 +80,7 @@ class StadiumService {
 
   //used to add a concession and the foods at said concession
   static createConcession(concession) {
+    console.log("creating concession...", concession);
     return $.post(this.url, concession)
       .done((data) => {
         console.log("Create Concession API Response:", data);
@@ -193,8 +194,9 @@ class DOMManager {
     }
   }
 
-  static createConcession(name) {
-    StadiumService.createConcession(new Concession(name))
+  static createConcession(name, food) {
+    console.log("create concession", "name data:", name, "food data:", food);
+    StadiumService.createConcession(new Concession(name, food))
       .then(() => StadiumService.getAllStadiums())
       .then((concessions) => this.render(concessions));
   }
@@ -239,7 +241,7 @@ class DOMManager {
     $("#app").empty();
     for (let stadium of stadiums) {
       let stadiumNameData = stadium.stadiumName;
-      console.log(stadiumNameData);
+      // console.log(stadiumNameData);
 
       //developed button for 'Delete Stadium'
       $("#app").prepend(
@@ -295,7 +297,7 @@ class DOMManager {
               <!-- developed button for 'Add Concession' -->
               <button
                 id="${stadium.id}-new-concession"
-                onclick="DOMManager.addConcession('${stadium.id}')"
+                onclick="DOMManager.createConcession($('#${stadium.id}-concession-name').val(),$('#${stadium.id}-concession-foods').val())"
                 class="btn btn-primary form-control"
               >
                 Add Concession
@@ -313,7 +315,7 @@ class DOMManager {
           <br />`
       );
       for (let concession of stadium.concessions) {
-        console.log("is this the solution?", concession);
+        // console.log("is this the solution?", concession);
         $(`#${stadium.id}`)
           .find(".card-body")
           .append(
