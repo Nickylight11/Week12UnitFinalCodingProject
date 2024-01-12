@@ -79,8 +79,17 @@ class StadiumService {
   // }
 
   //used to add a concession and the foods at said concession
-  static createConcession(concession) {
+  static createConcession(concession, stadium) {
     console.log("creating concession...", concession);
+    console.log("creating stadium...", stadium);
+
+    return $.ajax({
+      url: this.url + `/1`,
+      dataType: "json",
+      data: JSON.stringify(concession),
+      contentType: "application/json",
+      type: "PUT",
+    });
     return $.post(this.url, concession)
       .done((data) => {
         console.log("Create Concession API Response:", data);
