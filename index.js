@@ -80,10 +80,12 @@ class StadiumService {
 
   //used to add a concession and the foods at said concession
   static createConcession(concession) {
+    console.log("jamal made me do it");
     console.log("creating concession...", concession);
     return $.post(this.url, concession)
       .done((data) => {
         console.log("Create Concession API Response:", data);
+        $("#6");
       })
       .fail((xhr, status, error) => {
         console.error("Create Concession API Request Failed:", status, error);
